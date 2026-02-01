@@ -1,0 +1,161 @@
+﻿@typeparam T where T : class, new()
+@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Linq.Expressions
+@using MongoOptions.Extensions
+@using MongoOptions.Blazor.Areas.UI
+
+@foreach (var prop in typeof(T).GetEligibleProperties())
+{
+    <div class="mb-3 ms-3">
+        <label class="form-label">@prop.GetDisplayName()</label>
+
+        @if (prop.PropertyType.GetUnderlyingType() == typeof(string))
+        {
+            var expression = prop.CreateLambda<string>(SettingsObject);
+            <InputText Value="@(prop.GetValue(SettingsObject) as string ?? string.Empty)"
+                       ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                       ValueExpression="@expression"
+                       class="form-control" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(Guid))
+        {
+            var expression = prop.CreateLambda<Guid>(SettingsObject);
+
+            <input type="text"
+                   class="form-control"
+                   value="@prop.GetValue(SettingsObject)"
+                   @onchange="@(e => { UpdateGuid(e.Value.ToString(), prop); })"
+                   />
+            <ValidationMessage For="@expression" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(int))
+        {
+            var expression = prop.CreateLambda<int>(SettingsObject);
+
+            <InputNumber Value="@((int)(prop.GetValue(SettingsObject) ?? 0))"
+                         TValue="int"
+                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                         ValueExpression="@expression"
+                         class="form-control" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(float))
+        {
+            var expression = prop.CreateLambda<float>(SettingsObject);
+
+            <InputNumber Value="@((float)(prop.GetValue(SettingsObject) ?? 0))"
+                         TValue="float"
+                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                         ValueExpression="@expression"
+                         class="form-control" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(double))
+        {
+            var expression = prop.CreateLambda<double>(SettingsObject);
+
+            <InputNumber Value="@((double)(prop.GetValue(SettingsObject) ?? 0))"
+                         TValue="double"
+                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                         ValueExpression="@expression"
+                         class="form-control" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(decimal))
+        {
+            var expression = prop.CreateLambda<decimal>(SettingsObject);
+
+            <InputNumber Value="@((decimal)(prop.GetValue(SettingsObject) ?? 0))"
+                         TValue="decimal"
+                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                         ValueExpression="@expression"
+                         class="form-control" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(long))
+        {
+            var expression = prop.CreateLambda<long>(SettingsObject);
+
+            <InputNumber Value="@((long)(prop.GetValue(SettingsObject) ?? 0))"
+                         TValue="long"
+                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                         ValueExpression="@expression"
+                         class="form-control" />
+        }
+        else if (prop.PropertyType.GetUnderlyingType() == typeof(bool))
+        {
+            var expression = prop.CreateLambda<bool>(SettingsObject);
+            <div class="form-check form-switch">
+                <InputCheckbox Value="@((bool)prop.GetValue(SettingsObject)!)"
+                               ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                               ValueExpression="@expression"
+                               class="form-check-input" />
+            </div>
+        }
+        else if (IsAssignableToGenericType(prop.PropertyType.GetUnderlyingType(), typeof(IList<>)))
+        {
+            var itemType = prop.PropertyType.GetGenericArguments()[0];
+            var listInstance = prop.GetValue(SettingsObject);
+            var instance = typeof(ListComponent<>).MakeGenericType(itemType);
+            <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
+                          ["Items"] = listInstance, 
+                          ["Label"] = prop.Name 
+                      })" />
+        }
+        else if (IsAssignableToGenericType(prop.PropertyType.GetUnderlyingType(), typeof(IDictionary<,>)))
+        {
+            var expression = prop.CreateLambda(SettingsObject, prop.PropertyType);
+            var itemType = prop.PropertyType.GetGenericArguments()[1];
+            var keyType = prop.PropertyType.GetGenericArguments()[0];
+            var listInstance = prop.GetValue(SettingsObject);
+            var instance = typeof(DictionaryEditor<,,>).MakeGenericType(keyType, itemType, typeof(T));
+            <CascadingValue Value="@SettingsObject">
+            <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
+                          ["Items"] = listInstance, 
+                          ["Label"] = prop.Name,
+                          ["propertyInfo"] = prop
+                      })" />
+            </CascadingValue>
+            <ValidationMessage For="@expression" />
+        }
+        else if (prop.PropertyType.IsClass && !IsAssignableToGenericType(prop.PropertyType, prop.PropertyType))
+        {
+            dynamic nestedValue = prop.GetValue(SettingsObject);
+            if (nestedValue == null)
+            {
+                nestedValue = Activator.CreateInstance(prop.PropertyType);
+                prop.SetValue(SettingsObject, nestedValue);
+            }
+
+            <ValueEditor SettingsObject="nestedValue"/>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public T SettingsObject { get; set; } = new();
+    [CascadingParameter] public EditContext CurrentContext { get; set; } = default!;
+    [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
+
+    private async Task UpdateGuid(string val, PropertyInfo prop)
+    {
+        var fieldIdentifier = new FieldIdentifier(SettingsObject, prop.Name);
+        if (!Guid.TryParse(val, out var result))
+        {
+            MessageStore?.Add(fieldIdentifier, "That is not a valid GUID format!");
+            CurrentContext?.NotifyValidationStateChanged();
+        }
+        else
+        {
+            prop.SetValue(SettingsObject, result);
+            MessageStore?.Clear(new FieldIdentifier(SettingsObject, prop.Name));
+            CurrentContext?.NotifyValidationStateChanged();
+        }
+    }
+
+    public static bool IsAssignableToGenericType(Type type, Type genericInterface)
+    {
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == genericInterface)
+            return true;
+
+        return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterface);
+    }
+}

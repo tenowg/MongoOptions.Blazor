@@ -1,0 +1,87 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using MongoOptions.Extensions
+@using System.Reflection
+@typeparam TKey
+@typeparam TValue
+@typeparam TSettingConfig
+
+<div class="dictionary-editor border p-3">
+    <h6>@Label</h6>
+    @foreach (var key in Items.Keys.ToList())
+    {
+        <div class="row mb-2">
+            <div class="col">
+                <input class="form-control form-control-sm" value="@key" @onchange="@(e => UpdateKey(key, e.Value))" />
+            </div>
+            <div class="col">
+                @if (typeof(TValue).IsPrimitive || typeof(TValue) == typeof(string))
+                {
+                <input class="form-control form-control-sm"
+                       value="@Items[key]"
+                       @onchange="@(e => UpdateValue(key, e.Value))" />
+                }
+                else
+                {
+                dynamic nested = Items[key];
+                <ValueEditor SettingsObject="nested" />
+                }
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-danger btn-sm" @onclick="@(() => Items.Remove(key))">Remove</button>
+            </div>
+        </div>
+    }
+    @* You'd need two temporary fields here to add a New Key and New Value *@
+    <button type="button" class="btn btn-primary btn-sm" @onclick="AddItem">+ Add Item</button>
+</div>
+
+@code {
+    [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public PropertyInfo propertyInfo { get; set; }
+    [CascadingParameter] public EditContext? CurrentContext { get; set; } = default!;
+    [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
+    [CascadingParameter] public TSettingConfig? SettingsObject { get; set; } = default!;
+
+    private void UpdateValue(TKey key, object? val)
+    {
+        Items[key] = (TValue)Convert.ChangeType(val, typeof(TValue))!;
+    }
+
+    private void UpdateKey(TKey key, object? value)
+    {
+        dynamic newValue = value;
+        var dictValue = Items[key];
+        Items.Remove(key);
+        Items.Add(newValue, dictValue);
+    }
+
+    private void AddItem()
+    {
+        MessageStore?.Clear(new FieldIdentifier(SettingsObject, propertyInfo.Name));
+        if (!typeof(TKey).IsPrimitive && typeof(TKey) != typeof(string))
+        {
+            // we can't handle this, it will in the future throw an error in the Core package
+            return;
+        }
+        if (!typeof(TValue).IsPrimitive && typeof(TValue) != typeof(string))
+        {
+            var value = Activator.CreateInstance<TValue>();
+            dynamic key = typeof(TKey).GetDefaultValue();
+            var test = new KeyValuePair<TKey, TValue>(key, value);
+            if (!Items.ContainsKey(key))
+            {
+                Items.Add(test);
+            }
+            else
+            {
+                // I would like to do this but I need to setup an event? not sure how to handle this unless I
+                // Cascade the main edititem.
+                
+                MessageStore?.Add(new FieldIdentifier(SettingsObject, propertyInfo.Name), "sdfjsnifunsdfjsd");
+            }
+        }
+        
+        CurrentContext.NotifyValidationStateChanged();
+    }   
+}

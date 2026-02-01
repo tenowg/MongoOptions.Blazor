@@ -1,0 +1,87 @@
+﻿@using Microsoft.Extensions.Options
+@typeparam T where T : class, new()
+@inject IOptionsMonitor<T> OptionsAccessor
+@inject IConfigManager ConfigManager
+
+<div class="row">
+    <div class="col-md-4">
+        <label>Select Configuration</label>
+        <select class="form-select" @onchange="OnSelectionChanged">
+            @foreach (var key in _availableKeys)
+            {
+                bool isSelected = key == _selectedKey;
+                <option value="@key" selected="@isSelected">@key</option>
+            }
+            <option value="NEW_CONFIG">+ Create New...</option>
+        </select>
+    </div>
+</div>
+
+@if (_editingModel != null)
+{
+    <ConfigEditor T="T"
+                  SettingsObject="_editingModel"
+                  ConfigName="@_selectedKey"
+                  OnSave="HandleSave" />
+}
+
+@code {
+    private List<string> _availableKeys = new();
+    private string _selectedKey = "Default";
+    // private string SelectedKey
+    // {
+    //     get { return _selectedKey; }
+    //     set { _selectedKey = value; OnSelectionChanged(value); }
+    // }
+
+    private T? _editingModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadKeys();
+        LoadSelectedConfig();
+        _selectedKey = "Default";
+    }
+
+    private async Task LoadKeys()
+    {
+        var keys = await ConfigManager.GetKeys<T>();
+        if (!keys.Contains("Default")) keys.Insert(0, "Default");
+        _availableKeys = keys;
+    }
+
+    private void LoadSelectedConfig()
+    {
+        // This is the line you suggested!
+        // It uses the framework's logic to fetch the specific named config.
+        _editingModel = OptionsAccessor.Get(_selectedKey);
+    }
+
+    private void OnSelectionChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (val == "NEW_CONFIG")
+        {
+            _selectedKey = "";
+            _editingModel = new T(); //Fresh object for a new entry
+        }
+        else
+        {
+            _selectedKey = val ?? "Default";
+            LoadSelectedConfig();
+        }
+    }
+
+    private async Task HandleSave((string Name, T Value) data)
+    {
+        try
+        {
+            await ConfigManager.UpdateConfigAsync(data.Name, data.Value);
+        }
+        catch
+        {
+            Console.WriteLine("yep it errored");
+        }
+        await LoadKeys(); // Refresh list in case of new name
+    }
+}

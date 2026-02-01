@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+	  <PackageId>Tenowg.MongoOptions.Blazor</PackageId>
+	  <Version>0.0.1-alpha</Version>
+	  <Authors>Craig Russell</Authors>
+	  <PackageProjectUrl>https://github.com/tenowg/MongoOptions.Blazor</PackageProjectUrl>
+	  <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+	  <RepositoryUrl>https://github.com/tenowg/MongoOptions.Blazor</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <Description>A Blazor library to use with MongoOptions.</Description>
+	  <PackageTags>mongodb;dotnet10;options;configuration;csharp14</PackageTags>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MongoOptions\MongoOptions.csproj" />
+  </ItemGroup>
+
+</Project>
