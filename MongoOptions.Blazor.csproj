@@ -13,10 +13,16 @@
 	  <RepositoryUrl>https://github.com/tenowg/MongoOptions.Blazor</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
 	  <Description>A Blazor library to use with MongoOptions.</Description>
-	  <PackageTags>mongodb;dotnet10;options;configuration;csharp14</PackageTags>
+	  <PackageTags>mongodb;dotnet10;options;configuration;csharp14;blazor</PackageTags>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+		<None Include="LICENSE.txt" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -24,10 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MongoOptions\MongoOptions.csproj" />
+    <PackageReference Include="Tenowg.MongoOptions" Version="1.0.1" />
   </ItemGroup>
 
 </Project>
