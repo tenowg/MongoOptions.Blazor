@@ -28,11 +28,6 @@
 @code {
     private List<string> _availableKeys = new();
     private string _selectedKey = "Default";
-    // private string SelectedKey
-    // {
-    //     get { return _selectedKey; }
-    //     set { _selectedKey = value; OnSelectionChanged(value); }
-    // }
 
     private T? _editingModel;
 
@@ -52,8 +47,6 @@
 
     private void LoadSelectedConfig()
     {
-        // This is the line you suggested!
-        // It uses the framework's logic to fetch the specific named config.
         _editingModel = OptionsAccessor.Get(_selectedKey);
     }
 
@@ -63,7 +56,7 @@
         if (val == "NEW_CONFIG")
         {
             _selectedKey = "";
-            _editingModel = new T(); //Fresh object for a new entry
+            _editingModel = new T();
         }
         else
         {
@@ -82,6 +75,6 @@
         {
             Console.WriteLine("yep it errored");
         }
-        await LoadKeys(); // Refresh list in case of new name
+        await LoadKeys();
     }
 }

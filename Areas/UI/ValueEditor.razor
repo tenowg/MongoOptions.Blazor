@@ -3,6 +3,8 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Linq.Expressions
+@using MongoOptions.Blazor.Components.Fragments
+@using MongoOptions.Blazor.Fragments
 @using MongoOptions.Extensions
 @using MongoOptions.Blazor.Areas.UI
 
@@ -21,14 +23,15 @@
         }
         else if (prop.PropertyType.GetUnderlyingType() == typeof(Guid))
         {
-            var expression = prop.CreateLambda<Guid>(SettingsObject);
+            @* var expression = prop.CreateLambda<Guid>(SettingsObject);
 
             <input type="text"
                    class="form-control"
                    value="@prop.GetValue(SettingsObject)"
                    @onchange="@(e => { UpdateGuid(e.Value.ToString(), prop); })"
                    />
-            <ValidationMessage For="@expression" />
+            <ValidationMessage For="@expression" /> *@
+            NumberFragments.GetDynamicFragment(SettingsObject, prop);
         }
         else if (prop.PropertyType.GetUnderlyingType() == typeof(int))
         {

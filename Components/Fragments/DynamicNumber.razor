@@ -1,0 +1,18 @@
+﻿@typeparam TValue
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+@using MongoOptions.Extensions
+@using System.Linq.Expressions
+
+<InputNumber TValue="TValue" 
+             Value="@((TValue)Property.GetValue(Target)!)" 
+             ValueExpression="@Expression"
+             ValueChanged="@(val => Property.SetValue(Target, val))"
+             class="form-control" />
+<ValidationMessage For="@Expression" />
+
+@code {
+    [Parameter] public PropertyInfo Property { get; set; } = default!;
+    [Parameter] public object Target { get; set; } = default!;
+    [Parameter] public Expression<Func<TValue>> Expression { get; set; } = default!;
+}

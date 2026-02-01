@@ -21,7 +21,7 @@ Ensure you have MongoOptions installed as a dependency.
 
 ### 1. Set up MongoOptions
 
-First, configure MongoOptions in your Blazor app as described in the [MongoOptions.Core README](https://github.com/tenowg/MongoOptions).
+First, configure MongoOptions in your Blazor app as described in the [MongoOptions README](https://github.com/tenowg/MongoOptions).
 
 ### 2. Add Components to Your App
 
