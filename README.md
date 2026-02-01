@@ -30,7 +30,7 @@ Import the library and use the provided components in your Razor pages.
 ```razor
 @using MongoOptions.Blazor.Components
 
-<ConfigurationManager OptionsType="typeof(YourSettingsClass)" />
+<ConfigSelector T="TestData"></ConfigSelector>
 ```
 
 Replace `YourSettingsClass` with your POCO class decorated with `[Options]`.
