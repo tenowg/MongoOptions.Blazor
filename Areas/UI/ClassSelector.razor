@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@* MongoOptions.Blazor.ManageConfigs.razor *@
+@inject MongoConfigRegistry Registry
+
+<div class="mongo-options-panel">
+    <InputSelect @bind-Value="_selectedType" TValue="string">
+        <option value="">-- Select a Config to Edit --</option>
+        @foreach (var config in Registry.GetConfigs())
+        {
+            <option value="@config.AssemblyQualifiedName">@config.Name</option>
+        }
+    </InputSelect>
+
+    @if (useType != null)
+    {
+        @* The "Selector" bridge we talked about *@
+        <DynamicComponent Type="typeof(ConfigSelector<>).MakeGenericType(useType)"/>
+    }
+</div>
+
+@code {
+    private string? _selectedType
+    {
+        get { return ""; }
+        set
+        {
+            OnTypeSelected(value);
+        }
+    }
+    private Type? useType { get; set; }
+
+    private void OnTypeSelected(string? typestring)
+    {
+        if (typestring != null)
+        {
+            useType = Type.GetType(typestring, false, false);
+        }
+    }
+}

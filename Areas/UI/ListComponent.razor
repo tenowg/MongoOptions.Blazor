@@ -60,6 +60,12 @@
         CurrentContext.NotifyValidationStateChanged();
     }
 
+    /// <summary>
+    /// Converts an object to the specified target type with support for Guids and enums.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    /// <param name="targetType">The target type to convert to.</param>
+    /// <returns>The converted object.</returns>
     public object? FlexibleConvert(object? value, Type targetType)
     {
         if (value == null || value.ToString() == "") return null;

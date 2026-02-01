@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @using MongoOptions.Extensions
 @using System.Reflection
-@typeparam TKey
+@typeparam TKey where TKey : notnull
 @typeparam TValue
 @typeparam TSettingConfig
 
@@ -11,7 +11,7 @@
     {
         <div class="row mb-2">
             <div class="col">
-                <input class="form-control form-control-sm" value="@key" @onchange="@(e => UpdateKey(key, e.Value))" />
+                <input class="form-control form-control-sm" value="@key" @onchange="@(e => UpdateKey(key, e.Value!))" />
             </div>
             <div class="col">
                 @if (typeof(TValue).IsPrimitive || typeof(TValue) == typeof(string))
@@ -22,7 +22,7 @@
                 }
                 else
                 {
-                dynamic nested = Items[key];
+                dynamic nested = Items[key]!;
                 <ValueEditor SettingsObject="nested" />
                 }
             </div>
@@ -38,17 +38,17 @@
 @code {
     [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
     [Parameter] public string Label { get; set; } = "";
-    [Parameter] public PropertyInfo propertyInfo { get; set; }
+    [Parameter] public PropertyInfo propertyInfo { get; set; } = default!;
     [CascadingParameter] public EditContext? CurrentContext { get; set; } = default!;
     [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
-    [CascadingParameter] public TSettingConfig? SettingsObject { get; set; } = default!;
+    [CascadingParameter] public required TSettingConfig SettingsObject { get; set; }
 
     private void UpdateValue(TKey key, object? val)
     {
         Items[key] = (TValue)Convert.ChangeType(val, typeof(TValue))!;
     }
 
-    private void UpdateKey(TKey key, object? value)
+    private void UpdateKey(TKey key, object value)
     {
         dynamic newValue = value;
         var dictValue = Items[key];
@@ -58,8 +58,9 @@
 
     private void AddItem()
     {
-        MessageStore?.Clear(new FieldIdentifier(SettingsObject, propertyInfo.Name));
-        if (!typeof(TKey).IsPrimitive && typeof(TKey) != typeof(string))
+        MessageStore?.Clear(new FieldIdentifier(SettingsObject!, propertyInfo.Name));
+        var keyValue = typeof(TKey).GetDefaultValue();
+        if (!typeof(TKey).IsPrimitive && typeof(TKey) != typeof(string) || keyValue == null)
         {
             // we can't handle this, it will in the future throw an error in the Core package
             return;
@@ -67,7 +68,7 @@
         if (!typeof(TValue).IsPrimitive && typeof(TValue) != typeof(string))
         {
             var value = Activator.CreateInstance<TValue>();
-            dynamic key = typeof(TKey).GetDefaultValue();
+            dynamic key = keyValue;
             var test = new KeyValuePair<TKey, TValue>(key, value);
             if (!Items.ContainsKey(key))
             {
@@ -75,13 +76,10 @@
             }
             else
             {
-                // I would like to do this but I need to setup an event? not sure how to handle this unless I
-                // Cascade the main edititem.
-                
-                MessageStore?.Add(new FieldIdentifier(SettingsObject, propertyInfo.Name), "sdfjsnifunsdfjsd");
+                MessageStore?.Add(new FieldIdentifier(SettingsObject!, propertyInfo.Name), "sdfjsnifunsdfjsd");
             }
         }
         
-        CurrentContext.NotifyValidationStateChanged();
+        CurrentContext?.NotifyValidationStateChanged();
     }   
 }

@@ -4,16 +4,18 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Linq.Expressions
 @using MongoOptions.Blazor.Components.Fragments
+@using MongoOptions.Blazor.Extensions
 @using MongoOptions.Blazor.Fragments
 @using MongoOptions.Extensions
 @using MongoOptions.Blazor.Areas.UI
 
 @foreach (var prop in typeof(T).GetEligibleProperties())
 {
+    var propType = prop.PropertyType;
     <div class="mb-3 ms-3">
-        <label class="form-label">@prop.GetDisplayName()</label>
+        <label class="form-label">@prop.GetDisplayName()</label><span>@propType.GetUITypeName()</span>
 
-        @if (prop.PropertyType.GetUnderlyingType() == typeof(string))
+        @if (propType.GetUnderlyingType() == typeof(string))
         {
             var expression = prop.CreateLambda<string>(SettingsObject);
             <InputText Value="@(prop.GetValue(SettingsObject) as string ?? string.Empty)"
@@ -21,70 +23,24 @@
                        ValueExpression="@expression"
                        class="form-control" />
         }
-        else if (prop.PropertyType.IsNumber())
-        @* else if (prop.PropertyType.GetUnderlyingType() == typeof(Guid)) *@
+        
+        else if (propType.GetUnderlyingType() == typeof(Guid))
         {
-            @* var expression = prop.CreateLambda<Guid>(SettingsObject);
+            var expression = prop.CreateLambda<Guid>(SettingsObject);
 
             <input type="text"
                    class="form-control"
                    value="@prop.GetValue(SettingsObject)"
-                   @onchange="@(e => { UpdateGuid(e.Value.ToString(), prop); })"
+                   @onchange="@(async e => { await UpdateGuid(e.Value?.ToString() ?? "", prop); })"
                    />
-            <ValidationMessage For="@expression" /> *@
-            NumberFragments.GetDynamicFragment(SettingsObject, prop);
+            <ValidationMessage For="@expression" />
+            
         }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(int))
+        else if (propType.IsSupportedNumber())
         {
-            var expression = prop.CreateLambda<int>(SettingsObject);
-
-            <InputNumber Value="@((int)(prop.GetValue(SettingsObject) ?? 0))"
-                         TValue="int"
-                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
-                         ValueExpression="@expression"
-                         class="form-control" />
+            @NumberFragments.GetDynamicFragment(SettingsObject, prop);
         }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(float))
-        {
-            var expression = prop.CreateLambda<float>(SettingsObject);
-
-            <InputNumber Value="@((float)(prop.GetValue(SettingsObject) ?? 0))"
-                         TValue="float"
-                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
-                         ValueExpression="@expression"
-                         class="form-control" />
-        }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(double))
-        {
-            var expression = prop.CreateLambda<double>(SettingsObject);
-
-            <InputNumber Value="@((double)(prop.GetValue(SettingsObject) ?? 0))"
-                         TValue="double"
-                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
-                         ValueExpression="@expression"
-                         class="form-control" />
-        }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(decimal))
-        {
-            var expression = prop.CreateLambda<decimal>(SettingsObject);
-
-            <InputNumber Value="@((decimal)(prop.GetValue(SettingsObject) ?? 0))"
-                         TValue="decimal"
-                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
-                         ValueExpression="@expression"
-                         class="form-control" />
-        }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(long))
-        {
-            var expression = prop.CreateLambda<long>(SettingsObject);
-
-            <InputNumber Value="@((long)(prop.GetValue(SettingsObject) ?? 0))"
-                         TValue="long"
-                         ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
-                         ValueExpression="@expression"
-                         class="form-control" />
-        }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(bool))
+        else if (propType.GetUnderlyingType() == typeof(bool))
         {
             var expression = prop.CreateLambda<bool>(SettingsObject);
             <div class="form-check form-switch">
@@ -94,38 +50,42 @@
                                class="form-check-input" />
             </div>
         }
-        else if (IsAssignableToGenericType(prop.PropertyType.GetUnderlyingType(), typeof(IList<>)))
+        else if (propType.IsEnum)
         {
-            var itemType = prop.PropertyType.GetGenericArguments()[0];
+            @EnumFragments.GetDynamicFragment(SettingsObject, prop);
+        }
+        else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IList<>)))
+        {
+            var itemType = propType.GetGenericArguments()[0];
             var listInstance = prop.GetValue(SettingsObject);
             var instance = typeof(ListComponent<>).MakeGenericType(itemType);
             <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
-                          ["Items"] = listInstance, 
+                          ["Items"] = listInstance!, 
                           ["Label"] = prop.Name 
                       })" />
         }
-        else if (IsAssignableToGenericType(prop.PropertyType.GetUnderlyingType(), typeof(IDictionary<,>)))
+        else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IDictionary<,>)))
         {
-            var expression = prop.CreateLambda(SettingsObject, prop.PropertyType);
-            var itemType = prop.PropertyType.GetGenericArguments()[1];
-            var keyType = prop.PropertyType.GetGenericArguments()[0];
+            var expression = prop.CreateLambda(SettingsObject, propType);
+            var itemType = propType.GetGenericArguments()[1];
+            var keyType = propType.GetGenericArguments()[0];
             var listInstance = prop.GetValue(SettingsObject);
             var instance = typeof(DictionaryEditor<,,>).MakeGenericType(keyType, itemType, typeof(T));
             <CascadingValue Value="@SettingsObject">
             <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
-                          ["Items"] = listInstance, 
+                          ["Items"] = listInstance!, 
                           ["Label"] = prop.Name,
                           ["propertyInfo"] = prop
                       })" />
             </CascadingValue>
             <ValidationMessage For="@expression" />
         }
-        else if (prop.PropertyType.IsClass && !IsAssignableToGenericType(prop.PropertyType, prop.PropertyType))
+        else if (propType.IsClass && !IsAssignableToGenericType(propType, propType))
         {
-            dynamic nestedValue = prop.GetValue(SettingsObject);
+            dynamic nestedValue = prop.GetValue(SettingsObject!)!;
             if (nestedValue == null)
             {
-                nestedValue = Activator.CreateInstance(prop.PropertyType);
+                nestedValue = Activator.CreateInstance(propType)!;
                 prop.SetValue(SettingsObject, nestedValue);
             }
 
@@ -155,6 +115,12 @@
         }
     }
 
+    /// <summary>
+    /// Determines if a type is assignable to a generic type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <param name="genericInterface">The generic interface to check against.</param>
+    /// <returns>True if the type is assignable to the generic type.</returns>
     public static bool IsAssignableToGenericType(Type type, Type genericInterface)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == genericInterface)

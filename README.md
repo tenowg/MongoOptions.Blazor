@@ -27,13 +27,31 @@ First, configure MongoOptions in your Blazor app as described in the [MongoOptio
 
 Import the library and use the provided components in your Razor pages.
 
+>> Before using this library and dashboard you need to understand this is very early stages
+>> It does work, but man is it ugly I will be working on styling the dashboard better in the
+>> near future (or if someone else wants to take a shot, be my guest, just leave me
+>> an issue so I know you are working on it) Thanks
+
 ```razor
 @using MongoOptions.Blazor.Components
 
 <ConfigSelector T="TestData"></ConfigSelector>
 ```
 
+or if you wish to use the class selector which handles all your registered classes and creates a full dashboard
+this is really all you need to have a full dashboard to edit your configuration files in MongoDB
+
+```razor
+@using MongoOptions.Blazor.Components
+
+<ClassSelector/>
+```
+
 Replace `YourSettingsClass` with your POCO class decorated with `[Options]`.
+
+## RoadMap
+- Work on Css styling
+- Due some issues with typing and components there are some limitations on what types that are allowed in your config classes, unfortunatly right now you just have to live and learn, as I get a strong grasp on what can't be use I will document it.
 
 ## 🤝 Contributing
 

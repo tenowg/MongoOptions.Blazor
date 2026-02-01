@@ -1,0 +1,34 @@
+﻿@typeparam TEnum
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+@using MongoOptions.Extensions
+@using System.Linq.Expressions
+
+<InputSelect 
+    TValue="TEnum"
+    ValueChanged="@(e => SetValue(e))"
+    ValueExpression="@Expression">
+    @foreach (var item in Items)
+    {
+        <option value="@item" selected="@isCurrent(item)">@item</option>
+    }
+    </InputSelect>
+
+@code {
+    [Parameter] public PropertyInfo Property { get; set; } = default!;
+    [Parameter] public object Target { get; set; } = default!;
+    [Parameter] public Expression<Func<TEnum>> Expression { get; set; } = default!;
+    [Parameter] public List<TEnum> Items { get; set; } = [];
+    [Parameter] public TEnum Current { get; set; } = default!;
+
+    private bool isCurrent(TEnum value) => value.Equals(Current);
+
+    private void SetValue(TEnum e)
+    {
+        if (Items.Contains(e))
+        {
+            Property.SetValue(Target, e);
+            Current = e;
+        }
+    }
+}
