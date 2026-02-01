@@ -21,7 +21,8 @@
                        ValueExpression="@expression"
                        class="form-control" />
         }
-        else if (prop.PropertyType.GetUnderlyingType() == typeof(Guid))
+        else if (prop.PropertyType.IsNumber())
+        @* else if (prop.PropertyType.GetUnderlyingType() == typeof(Guid)) *@
         {
             @* var expression = prop.CreateLambda<Guid>(SettingsObject);
 
