@@ -70,6 +70,7 @@
         try
         {
             await ConfigManager.UpdateConfigAsync(data.Name, data.Value);
+            //await InvokeAsync(StateHasChanged);
         }
         catch
         {

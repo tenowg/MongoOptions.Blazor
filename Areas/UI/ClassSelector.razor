@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
-@* MongoOptions.Blazor.ManageConfigs.razor *@
+@using MongoOptions.Blazor.Components.Css
 @inject MongoConfigRegistry Registry
+
+<CssMonitor/>
 
 <div class="mongo-options-panel">
     <InputSelect @bind-Value="_selectedType" TValue="string">

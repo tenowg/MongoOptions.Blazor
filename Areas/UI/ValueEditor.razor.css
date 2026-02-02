@@ -1,0 +1,18 @@
+.mb-ui-name {
+    content: "sdlfjsldfjklsdkfjsd";
+    color: var(--theme-typename-color, green);
+    font-size: var(--theme-typename-size, 5rem);
+
+    &::after {
+        content: ')';
+    }
+
+    &::before {
+        content: "(";
+    }
+}
+
+.mb-display-name {
+    color: var(--theme-displayname-color, purple);
+    font-size: var(--theme-displayname-size, 5rem);
+}

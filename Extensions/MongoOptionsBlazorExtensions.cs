@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MongoOptions.Blazor.Configs;
+using MongoOptions.Extensions;
 
 namespace MongoOptions.Blazor.Extensions
 {
@@ -16,6 +18,7 @@ namespace MongoOptions.Blazor.Extensions
         {
             // This is a great place to register any UI-specific 
             // services or JS interop helpers you might add later
+            services.AddMongoOptions<MongoThemeOptions>();
             return services;
         }
     }

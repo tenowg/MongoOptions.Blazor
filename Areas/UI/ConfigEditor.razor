@@ -37,6 +37,7 @@
         messageStore = new ValidationMessageStore(editContext);
 
         editContext.OnFieldChanged += (s, e) => messageStore.Clear(e.FieldIdentifier);
+        
     }
 
     private async Task HandleValidSubmit()
