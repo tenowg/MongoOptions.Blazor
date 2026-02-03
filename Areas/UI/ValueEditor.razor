@@ -12,7 +12,7 @@
 @foreach (var prop in typeof(T).GetEligibleProperties())
 {
     var propType = prop.PropertyType;
-    <div class="mb-3 ms-3">
+    <div class="card mb-3 mb-item">
         <label class="form-label mb-display-name">@prop.GetDisplayName()</label><span class="mb-ui-name">@propType.GetUITypeName()</span>
         <div>@prop.GetDescription()</div>
 

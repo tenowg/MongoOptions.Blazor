@@ -1,47 +1,76 @@
-﻿@using Microsoft.Extensions.Options
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Options
 @typeparam T where T : class, new()
 @inject IOptionsMonitor<T> OptionsAccessor
 @inject IConfigManager ConfigManager
 
-<div class="row">
-    <div class="col-md-4">
-        <label>Select Configuration</label>
-        <select class="form-select" @onchange="OnSelectionChanged">
+<div class="mb-select-config">
+    <div class="">
+        @* <label>Select Configuration</label> *@
+        <InputSelect class="form-select" @bind-Value="SelectedKey" disabled="@Disabled">
+            <option value="SELECT">Select a Configuration to Edit</option>
             @foreach (var key in _availableKeys)
             {
                 bool isSelected = key == _selectedKey;
-                <option value="@key" selected="@isSelected">@key</option>
+                <option value="@key">@key</option>
             }
             <option value="NEW_CONFIG">+ Create New...</option>
-        </select>
+        </InputSelect>
     </div>
 </div>
 
-@if (_editingModel != null)
+@if (_editingModel != null && Enabled)
 {
+    <div class="mb-editor">
     <ConfigEditor T="T"
                   SettingsObject="_editingModel"
                   ConfigName="@_selectedKey"
                   OnSave="HandleSave" />
+    </div>
 }
 
+<style>
+    .mb-select-config
+    {
+        display: grid;
+        grid-area: config;
+    }
+
+    .mb-editor {
+        display: grid;
+        grid-area: body;
+    }
+</style>
 @code {
     private List<string> _availableKeys = new();
-    private string _selectedKey = "Default";
+    private string _selectedKey = "SELECT";
+    private string SelectedKey
+    {
+        get => _selectedKey;
+        set
+        {
+            _selectedKey = value;
+            OnSelectionChanged(value);
+        }
+    }
 
-    private T? _editingModel;
+    [Parameter] public bool Enabled { get; set; } = true;
+    private bool Disabled { get => !Enabled; }
+
+    private T? _editingModel = null;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadKeys();
-        LoadSelectedConfig();
-        _selectedKey = "Default";
+        //LoadSelectedConfig();
+        //_selectedKey = "Default";
     }
 
     private async Task LoadKeys()
     {
         var keys = await ConfigManager.GetKeys<T>();
         if (!keys.Contains("Default")) keys.Insert(0, "Default");
+        //keys.Add("NEW_CONFIG");
         _availableKeys = keys;
     }
 
@@ -50,13 +79,17 @@
         _editingModel = OptionsAccessor.Get(_selectedKey);
     }
 
-    private void OnSelectionChanged(ChangeEventArgs e)
+    private void OnSelectionChanged(string e)
     {
-        var val = e.Value?.ToString();
+        var val = e; //.Value?.ToString();
         if (val == "NEW_CONFIG")
         {
             _selectedKey = "";
             _editingModel = new T();
+        }
+        else if (val == "SELECT")
+        {
+            _editingModel = null;
         }
         else
         {

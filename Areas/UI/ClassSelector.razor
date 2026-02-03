@@ -4,7 +4,8 @@
 
 <CssMonitor/>
 
-<div class="mongo-options-panel">
+<div class="mb-options-panel">
+     <div class="mb-select-class">
     <InputSelect @bind-Value="_selectedType" TValue="string">
         <option value="">-- Select a Config to Edit --</option>
         @foreach (var config in Registry.GetConfigs())
@@ -12,12 +13,10 @@
             <option value="@config.AssemblyQualifiedName">@config.Name</option>
         }
     </InputSelect>
-
-    @if (useType != null)
-    {
-        @* The "Selector" bridge we talked about *@
-        <DynamicComponent Type="typeof(ConfigSelector<>).MakeGenericType(useType)"/>
-    }
+    </div>
+    <DynamicComponent Type="typeof(ConfigSelector<>).MakeGenericType(useType ?? typeof(object))" Parameters="@( new Dictionary<string, object> {
+                ["Enabled"] = useType != null
+                })"/>
 </div>
 
 @code {
@@ -39,3 +38,22 @@
         }
     }
 }
+
+<style>
+    .mb-options-panel
+    {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas: 
+            "class config"
+            "body body";
+        gap: .25rem;
+    }
+
+    .mb-select-class
+    {
+        display: grid;
+        grid-area: class;
+    }
+</style>

@@ -19,6 +19,8 @@
 	  <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
 	  <GeneratePackageOnBuild Condition="'$(Configuration)'=='LocalRelease'">true</GeneratePackageOnBuild>
 	  <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Debug'">false</GeneratePackageOnBuild>
+
+	  <MinVerDefaultPreReleaseIdentifiers  Condition="'$(Configuration)' == 'LocalRelease'">local</MinVerDefaultPreReleaseIdentifiers>
 	  <Configurations>Debug;Release;LocalRelease</Configurations>
   </PropertyGroup>
 
@@ -45,10 +47,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 	<ProjectReference Include="..\MongoOptions\MongoOptions.csproj" Condition="'$(Configuration)' == 'Debug'" />
-	<PackageReference Include="Tenowg.MongoOptions" Version="*" Condition="'$(Configuration)' == 'Release'" />
+	<PackageReference Include="Tenowg.MongoOptions" Version="*" Condition="'$(Configuration)' == 'Release'"/>
 	<PackageReference Include="Tenowg.MongoOptions" Condition="'$(Configuration)'=='LocalRelease'">
-	  <Version>*-*</Version>
+	  <Version>*-local*</Version>
 	</PackageReference>
   </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="I:\Mongo\MongoOptions.Generator\MongoOptions.Generator.csproj"
+						  OutputItemType="Analyzer"
+						  ReferenceOutputAssembly="false"
+						  Condition="'$(Configuration)' == 'Debug'"/>
+	</ItemGroup>
 
 </Project>

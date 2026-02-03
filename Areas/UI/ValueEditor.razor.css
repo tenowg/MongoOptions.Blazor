@@ -16,3 +16,9 @@
     color: var(--theme-displayname-color, purple);
     font-size: var(--theme-displayname-size, 5rem);
 }
+
+.mb-item {
+    border: 1px solid var(--theme-bordercolor-primary, #8c8c8c);
+    padding: .75rem;
+    background-color: var(--theme-primary, #f2f2f2);
+}

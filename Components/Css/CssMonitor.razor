@@ -11,6 +11,8 @@
         --theme-displayname-size: @CurrentTheme.DisplayNameSize;
         --theme-typename-color: @CurrentTheme.TypeNameColor;
         --theme-typename-size: @CurrentTheme.TypeNameSize;
+        --theme-bordercolor-primary: @CurrentTheme.BorderColorPrimary;
+        --theme-bordercolor-secondary: @CurrentTheme.BorderColorSecondary;
     }
 </style>
 
@@ -21,7 +23,6 @@
     protected override void OnInitialized()
     {
         cache.TryRemove(Options.DefaultName);
-        // Force a re-render whenever the MongoDB/Options change
        _onChangeToken = ThemeMonitor.OnChange(_ => InvokeAsync(StateHasChanged));
     }
 

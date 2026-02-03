@@ -2,31 +2,56 @@
 @using System.Reflection
 @using Microsoft.AspNetCore.Components.Forms
 
-<div class="list-editor border p-3 mb-3">
-    <h6>@Label</h6>
+<div class="mb-list-editor p-3 mb-3">
+    @* <h6>@Label</h6> *@
     @foreach (var (item, index) in Items.Select((value, i) => (value, i)))
-    {
-        <div class="d-flex mb-2">
-            <span class="me-2 mt-1">@index:</span>
-
-            @if (typeof(TItem).IsPrimitive || typeof(TItem) == typeof(string))
-            {
-            <input class="form-control"
-                   value="@item"
-                   @onchange="@(e => UpdateItem(index, e.Value))" />
-            } else
-            {
-                dynamic nested = item;
-                <ValueEditor SettingsObject="nested"/>
-            }
-            <button type="button" class="btn btn-danger btn-sm ms-2"
-                    @onclick="@(() => RemoveItem(index))">
-                ✕
+    {   
+        <div class="mb-list-item">
+            <div class="me-2 mt-1 mb-list-index">@index:</div>
+            <div class="">   
+                @if (typeof(TItem).IsPrimitive || typeof(TItem) == typeof(string))
+                {
+                <input class="form-control"
+                       value="@item"
+                       @onchange="@(e => UpdateItem(index, e.Value))" />
+                } else
+                {
+                    dynamic nested = item;
+                    <ValueEditor SettingsObject="nested"/>
+                }
+            </div>
+            <button type="button" class="btn btn-danger btn-sm ms-2 mb-item-button"
+                        @onclick="@(() => RemoveItem(index))">
+                    ✕
             </button>
         </div>
     }
-    <button type="button" class="btn btn-primary btn-sm" @onclick="AddItem">+ Add Item</button>
+    <button type="button" class="mb-list-add btn btn-primary btn-sm" @onclick="AddItem">+ Add Item</button>
 </div>
+
+<style>
+    .mb-list-editor
+    {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mb-list-item
+    {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        padding: 5px 0px 5px 0px;
+    }
+    
+    .mb-list-index
+    {
+        align-content: center;
+    }
+
+    .mb-item-button {
+        margin: 5px 0;
+    }
+</style>
 
 @code {
     [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();

@@ -5,12 +5,12 @@
 @typeparam TValue
 @typeparam TSettingConfig
 
-<div class="dictionary-editor border p-3">
-    <h6>@Label</h6>
+<div class="mb-dictionary-editor">
+    @* <h6>@Label</h6> *@
     @foreach (var key in Items.Keys.ToList())
     {
-        <div class="row mb-2">
-            <div class="col">
+        <div class="mb-dictionary-item">
+            <div class="col mb-dictionary-key">
                 <input class="form-control form-control-sm" value="@key" @onchange="@(e => UpdateKey(key, e.Value!))" />
             </div>
             <div class="col">
@@ -34,6 +34,31 @@
     @* You'd need two temporary fields here to add a New Key and New Value *@
     <button type="button" class="btn btn-primary btn-sm" @onclick="AddItem">+ Add Item</button>
 </div>
+
+<style>
+    .mb-dictionary-editor
+    {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+    }
+
+    .mb-dictionary-item
+    {
+        display: grid;
+        border: 1px solid green;
+        padding: .75rem;
+    }
+
+    .mb-dictionary-key
+    {
+        display: flex;
+        &::before {
+            content: "Key: ";
+            align-content: center;
+        }
+    }
+</style>
 
 @code {
     [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
