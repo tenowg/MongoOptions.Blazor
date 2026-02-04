@@ -1,13 +1,13 @@
 ﻿@typeparam T where T : class, new()
-@using System.Reflection
 @using System.ComponentModel.DataAnnotations
-@using Microsoft.AspNetCore.Components.Forms
 @using System.Linq.Expressions
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+@using MongoOptions.Blazor.Areas.UI
 @using MongoOptions.Blazor.Components.Fragments
 @using MongoOptions.Blazor.Extensions
 @using MongoOptions.Blazor.Fragments
 @using MongoOptions.Extensions
-@using MongoOptions.Blazor.Areas.UI
 
 @foreach (var prop in typeof(T).GetEligibleProperties())
 {

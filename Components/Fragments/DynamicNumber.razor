@@ -1,8 +1,8 @@
 ﻿@typeparam TValue
+@using System.Linq.Expressions
 @using System.Reflection
 @using Microsoft.AspNetCore.Components.Forms
 @using MongoOptions.Extensions
-@using System.Linq.Expressions
 
 <InputNumber TValue="TValue" 
              Value="@((TValue)Property.GetValue(Target)!)" 

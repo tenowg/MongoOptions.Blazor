@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MongoOptions.Blazor.Configs
 {
-    [MongoOptions]
+    [MongoOption]
     public class MongoThemeOptions
     {
         [Display(Name = "Primary Color", Description = "The primary color")]
