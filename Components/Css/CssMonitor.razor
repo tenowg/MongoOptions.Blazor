@@ -1,7 +1,7 @@
 ﻿@using Microsoft.Extensions.Options
 @using MongoOptions.Blazor.Configs
 @inject IOptionsMonitor<MongoThemeOptions> ThemeMonitor
-@inject IOptionsMonitorCache<MongoThemeOptions> cache
+@* @inject IOptionsMonitorCache<MongoThemeOptions> cache *@
 @implements IDisposable
 
 <style>
@@ -22,7 +22,7 @@
 
     protected override void OnInitialized()
     {
-        cache.TryRemove(Options.DefaultName);
+        //cache.TryRemove(Options.DefaultName);
        _onChangeToken = ThemeMonitor.OnChange(_ => InvokeAsync(StateHasChanged));
     }
 

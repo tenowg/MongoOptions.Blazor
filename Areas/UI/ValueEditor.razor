@@ -1,7 +1,8 @@
-﻿@typeparam T where T : class, new()
+﻿@typeparam T where T : class, IConfigFile
 @using System.ComponentModel.DataAnnotations
 @using System.Linq.Expressions
 @using System.Reflection
+@using MongoOptions.Interfaces
 @using Microsoft.AspNetCore.Components.Forms
 @using MongoOptions.Blazor.Areas.UI
 @using MongoOptions.Blazor.Components.Fragments
@@ -9,68 +10,68 @@
 @using MongoOptions.Blazor.Fragments
 @using MongoOptions.Extensions
 
-@foreach (var prop in typeof(T).GetEligibleProperties())
-{
+@if(SettingsObject != null) {
+    @foreach (var prop in SettingsObject.GetProperties())
+    {
     var propType = prop.PropertyType;
     <div class="card mb-3 mb-item">
-        <label class="form-label mb-display-name">@prop.GetDisplayName()</label><span class="mb-ui-name">@propType.GetUITypeName()</span>
-        <div>@prop.GetDescription()</div>
+        <label class="form-label mb-display-name">@prop.Name</label><span class="mb-ui-name">@propType.GetUITypeName()</span>
+        <div>@prop.Description</div>
 
         @if (propType.GetUnderlyingType() == typeof(string))
         {
-            var expression = prop.CreateLambda<string>(SettingsObject);
-            <InputText Value="@(prop.GetValue(SettingsObject) as string ?? string.Empty)"
-                       ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+            var expression = (Expression<Func<string>>)prop.ExpressionFactory(SettingsObject);
+
+            <InputText Value="@(prop.Getter(SettingsObject)?.ToString() ?? "failed")"
+                       ValueChanged="@(val => prop.Setter(SettingsObject, val))"
                        ValueExpression="@expression"
                        class="form-control" />
         }
         
         else if (propType.GetUnderlyingType() == typeof(Guid))
         {
-            var expression = prop.CreateLambda<Guid>(SettingsObject);
-
             <input type="text"
                    class="form-control"
-                   value="@prop.GetValue(SettingsObject)"
+                   value="@prop.Getter(SettingsObject)"
                    @onchange="@(async e => { await UpdateGuid(e.Value?.ToString() ?? "", prop); })"
                    />
-            <ValidationMessage For="@expression" />
             
         }
         else if (propType.IsSupportedNumber())
         {
-            @NumberFragments.GetDynamicFragment(SettingsObject, prop);
+            @((RenderFragment)prop.Dispatcher(SettingsObject, new NumberFragmentDispatcher(), prop))
         }
         else if (propType.GetUnderlyingType() == typeof(bool))
         {
-            var expression = prop.CreateLambda<bool>(SettingsObject);
+            var expression = (Expression<Func<bool>>)prop.ExpressionFactory(SettingsObject);
             <div class="form-check form-switch">
-                <InputCheckbox Value="@((bool)prop.GetValue(SettingsObject)!)"
-                               ValueChanged="@(val => prop.SetValue(SettingsObject, val))"
+                <InputCheckbox Value="@((bool)prop.Getter(SettingsObject)!)"
+                               ValueChanged="@(val => prop.Setter(SettingsObject, val))"
                                ValueExpression="@expression"
                                class="form-check-input" />
             </div>
         }
         else if (propType.IsEnum)
         {
-            @EnumFragments.GetDynamicFragment(SettingsObject, prop);
+            @((RenderFragment)prop.Dispatcher(SettingsObject, new EnumFragmentDispatcher(), prop));
         }
         else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IList<>)))
         {
             var itemType = propType.GetGenericArguments()[0];
-            var listInstance = prop.GetValue(SettingsObject);
+            var listInstance = prop.Getter(SettingsObject);
             var instance = typeof(ListComponent<>).MakeGenericType(itemType);
             <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
                           ["Items"] = listInstance!, 
                           ["Label"] = prop.Name 
                       })" />
         }
-        else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IDictionary<,>)))
+         else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IDictionary<,>)))
         {
-            var expression = prop.CreateLambda(SettingsObject, propType);
+            //var expression = prop.CreateLambda(SettingsObject, propType);
+            //var expression = (Expression<Func<Dictionary<object,object>>>)prop.ExpressionFactory(SettingsObject);
             var itemType = propType.GetGenericArguments()[1];
             var keyType = propType.GetGenericArguments()[0];
-            var listInstance = prop.GetValue(SettingsObject);
+            var listInstance = prop.Getter(SettingsObject);
             var instance = typeof(DictionaryEditor<,,>).MakeGenericType(keyType, itemType, typeof(T));
             <CascadingValue Value="@SettingsObject">
             <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
@@ -79,28 +80,28 @@
                           ["propertyInfo"] = prop
                       })" />
             </CascadingValue>
-            <ValidationMessage For="@expression" />
-        }
+            //<ValidationMessage For="@expression" />
+        } 
         else if (propType.IsClass && !IsAssignableToGenericType(propType, propType))
         {
-            dynamic nestedValue = prop.GetValue(SettingsObject!)!;
+            dynamic nestedValue = prop.Getter(SettingsObject!)!;
             if (nestedValue == null)
             {
                 nestedValue = Activator.CreateInstance(propType)!;
-                prop.SetValue(SettingsObject, nestedValue);
+                prop.Setter(SettingsObject, nestedValue);
             }
 
-            <ValueEditor SettingsObject="nestedValue"/>
+            @* <ValueEditor SettingsObject="nestedValue"/> *@
         }
     </div>
+    }
 }
-
 @code {
-    [Parameter] public T SettingsObject { get; set; } = new();
+    [Parameter]public T? SettingsObject { get; set; }
     [CascadingParameter] public EditContext CurrentContext { get; set; } = default!;
     [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
 
-    private async Task UpdateGuid(string val, PropertyInfo prop)
+    private async Task UpdateGuid(string val, PropertyMetadata prop)
     {
         var fieldIdentifier = new FieldIdentifier(SettingsObject, prop.Name);
         if (!Guid.TryParse(val, out var result))
@@ -110,7 +111,7 @@
         }
         else
         {
-            prop.SetValue(SettingsObject, result);
+            prop.Setter(SettingsObject, result);
             MessageStore?.Clear(new FieldIdentifier(SettingsObject, prop.Name));
             CurrentContext?.NotifyValidationStateChanged();
         }

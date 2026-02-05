@@ -6,7 +6,6 @@
 @typeparam TSettingConfig
 
 <div class="mb-dictionary-editor">
-    @* <h6>@Label</h6> *@
     @foreach (var key in Items.Keys.ToList())
     {
         <div class="mb-dictionary-item">
@@ -63,7 +62,7 @@
 @code {
     [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
     [Parameter] public string Label { get; set; } = "";
-    [Parameter] public PropertyInfo propertyInfo { get; set; } = default!;
+    [Parameter] public PropertyMetadata propertyInfo { get; set; } = default!;
     [CascadingParameter] public EditContext? CurrentContext { get; set; } = default!;
     [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
     [CascadingParameter] public required TSettingConfig SettingsObject { get; set; }
@@ -84,7 +83,7 @@
     private void AddItem()
     {
         MessageStore?.Clear(new FieldIdentifier(SettingsObject!, propertyInfo.Name));
-        var keyValue = typeof(TKey).GetDefaultValue();
+        var keyValue = default(TKey); // typeof(TKey).GetDefaultValue();
         if (!typeof(TKey).IsPrimitive && typeof(TKey) != typeof(string) || keyValue == null)
         {
             // we can't handle this, it will in the future throw an error in the Core package

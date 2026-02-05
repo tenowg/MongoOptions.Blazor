@@ -5,14 +5,13 @@
 @using MongoOptions.Extensions
 
 <InputNumber TValue="TValue" 
-             Value="@((TValue)Property.GetValue(Target)!)" 
+             Value="@((TValue)Property.Getter(Target)!)" 
              ValueExpression="@Expression"
-             ValueChanged="@(val => Property.SetValue(Target, val))"
+             ValueChanged="@(val => Property.Setter(Target, val))"
              class="form-control" />
-<ValidationMessage For="@Expression" />
 
 @code {
-    [Parameter] public PropertyInfo Property { get; set; } = default!;
+    [Parameter] public PropertyMetadata Property { get; set; } = default!;
     [Parameter] public object Target { get; set; } = default!;
     [Parameter] public Expression<Func<TValue>> Expression { get; set; } = default!;
 }

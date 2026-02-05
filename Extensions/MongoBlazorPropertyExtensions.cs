@@ -22,10 +22,10 @@ namespace MongoOptions.Blazor.Extensions
                 var property = Expression.Property(constant, prop.Name);
 
                 Expression finalExpression = property;
-                if (prop.PropertyType != typeof(TProp))
-                {
-                    finalExpression = Expression.Call(property, typeof(object).GetMethod("ToString")!);
-                }
+                //if (prop.PropertyType != typeof(TProp))
+                //{
+                //    finalExpression = Expression.Call(property, typeof(object).GetMethod("ToString")!);
+                //}
 
                 return Expression.Lambda<Func<TProp>>(finalExpression);
             }

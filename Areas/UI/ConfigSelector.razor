@@ -1,12 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Options
-@typeparam T where T : class, new()
+@using MongoOptions.Interfaces
+@typeparam T where T : class, IConfigFile, new()
 @inject IOptionsMonitor<T> OptionsAccessor
 @inject IConfigManager ConfigManager
+@inject MongoConfigRegistry registry
 
 <div class="mb-select-config">
     <div class="">
-        @* <label>Select Configuration</label> *@
         <InputSelect class="form-select" @bind-Value="SelectedKey" disabled="@Disabled">
             <option value="SELECT">Select a Configuration to Edit</option>
             @foreach (var key in _availableKeys)
@@ -57,20 +58,17 @@
     [Parameter] public bool Enabled { get; set; } = true;
     private bool Disabled { get => !Enabled; }
 
-    private T? _editingModel = null;
+    private T? _editingModel = default;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadKeys();
-        //LoadSelectedConfig();
-        //_selectedKey = "Default";
     }
 
     private async Task LoadKeys()
     {
         var keys = await ConfigManager.GetKeys<T>();
         if (!keys.Contains("Default")) keys.Insert(0, "Default");
-        //keys.Add("NEW_CONFIG");
         _availableKeys = keys;
     }
 
@@ -89,7 +87,7 @@
         }
         else if (val == "SELECT")
         {
-            _editingModel = null;
+            _editingModel = default;
         }
         else
         {

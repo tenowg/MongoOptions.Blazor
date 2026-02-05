@@ -1,40 +1,49 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @using MongoOptions.Blazor.Components.Css
+@using Fragments
+@using MongoOptions.Interfaces
 @inject MongoConfigRegistry Registry
 
 <CssMonitor/>
 
 <div class="mb-options-panel">
      <div class="mb-select-class">
-    <InputSelect @bind-Value="_selectedType" TValue="string">
+    <InputSelect @bind-Value="SelectedType" TValue="string">
         <option value="">-- Select a Config to Edit --</option>
         @foreach (var config in Registry.GetConfigs())
         {
-            <option value="@config.AssemblyQualifiedName">@config.Name</option>
+            <option value="@config.Name">@config.Name</option>
         }
     </InputSelect>
     </div>
-    <DynamicComponent Type="typeof(ConfigSelector<>).MakeGenericType(useType ?? typeof(object))" Parameters="@( new Dictionary<string, object> {
-                ["Enabled"] = useType != null
-                })"/>
+    @if (config != null)
+    {
+    @* <DynamicComponent Type="typeof(ConfigSelector<>).MakeGenericType(useType ?? typeof(object))" Parameters="@( new Dictionary<string, object> {
+                ["Enabled"] = useType != null,
+                ["Instance"] = Registry.GetInstance(useType)
+                })"/> *@
+    @((RenderFragment)config.Dispatcher(null, new ConfigSelectorFragmentDispatcher()));
+    }
 </div>
 
 @code {
-    private string? _selectedType
+    private string? _selectedType = "";
+    private string? SelectedType
     {
-        get { return ""; }
+        get { return _selectedType; }
         set
         {
+            _selectedType = value;
             OnTypeSelected(value);
         }
     }
-    private Type? useType { get; set; }
+    private IConfigFile? config { get; set; }
 
     private void OnTypeSelected(string? typestring)
     {
         if (typestring != null)
         {
-            useType = Type.GetType(typestring, false, false);
+            config = Registry.GetInstance(typestring);
         }
     }
 }

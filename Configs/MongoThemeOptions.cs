@@ -1,14 +1,14 @@
-﻿using MongoOptions.Attributes;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Extensions.Options;
+using MongoOptions.Attributes;
+using MongoOptions.Interfaces;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace MongoOptions.Blazor.Configs
 {
     [MongoOption]
-    public class MongoThemeOptions
+    public partial class MongoThemeOptions : IConfigFile
     {
+        [Required]
         [Display(Name = "Primary Color", Description = "The primary color")]
         public string PrimaryColor { get; set; } = "#007bff";
         public string DisplayNameColor { get; set; } = "black";
@@ -23,4 +23,7 @@ namespace MongoOptions.Blazor.Configs
         [Display(Name = "Border Color Secondary")]
         public string BorderColorSecondary { get; set; } = "#8c8c8c";
     }
+
+    [OptionsValidator]
+    public partial class MongoThemeOptionsValidator : IValidateOptions<MongoThemeOptions> { }
 }

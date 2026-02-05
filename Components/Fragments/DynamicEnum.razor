@@ -15,7 +15,7 @@
     </InputSelect>
 
 @code {
-    [Parameter] public PropertyInfo Property { get; set; } = default!;
+    [Parameter] public PropertyMetadata Property { get; set; } = default!;
     [Parameter] public object Target { get; set; } = default!;
     [Parameter] public Expression<Func<TEnum>> Expression { get; set; } = default!;
     [Parameter] public List<TEnum> Items { get; set; } = [];
@@ -27,7 +27,7 @@
     {
         if (Items.Contains(e))
         {
-            Property.SetValue(Target, e);
+            Property.Setter(Target, e);
             Current = e;
         }
     }

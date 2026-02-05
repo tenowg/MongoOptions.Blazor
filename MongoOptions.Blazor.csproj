@@ -58,5 +58,8 @@
 						  ReferenceOutputAssembly="false"
 						  Condition="'$(Configuration)' == 'Debug'"/>
 	</ItemGroup>
-
+	<PropertyGroup>
+		<PublishAot>false</PublishAot>
+		<IsAotCompatible>false</IsAotCompatible>
+	</PropertyGroup>
 </Project>
