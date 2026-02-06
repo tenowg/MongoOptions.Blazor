@@ -1,0 +1,41 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    # This matches tags like 1.0, 1.0.1, 2.4.0-alpha (though we will filter those)
+    tags:
+      - '[0-9]+.[0-9]+*' 
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: "Nuget"
+    # Added a condition to ensure we only run if the tag doesn't contain a hyphen (no previews)
+    if: "!contains(github.ref_name, '-')"
+
+    defaults:
+      run:
+        working-directory: ./main
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        path: main
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Pack Package
+      # Since your tag is exactly the version (1.0.1), we use github.ref_name directly
+      run: dotnet pack --configuration Release --no-build -p:PackageVersion=${{ github.ref_name }} --output .
+
+    - name: Push to NuGet
+      run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API }} --source https://api.nuget.org/v3/index.json --skip-duplicate
