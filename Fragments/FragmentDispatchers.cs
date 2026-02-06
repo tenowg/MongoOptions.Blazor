@@ -1,4 +1,5 @@
 ﻿using MongoOptions.Interfaces;
+using MongoOptions.Types;
 
 namespace MongoOptions.Blazor.Fragments
 {

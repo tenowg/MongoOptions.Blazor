@@ -1,28 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
 
-	  <PackageId>Tenowg.MongoOptions.Blazor</PackageId>
-	  <Authors>Craig Russell</Authors>
-	  <PackageProjectUrl>https://github.com/tenowg/MongoOptions.Blazor</PackageProjectUrl>
-	  <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-	  <RepositoryUrl>https://github.com/tenowg/MongoOptions.Blazor</RepositoryUrl>
-	  <RepositoryType>git</RepositoryType>
-	  <Description>A Blazor library to use with MongoOptions.</Description>
-	  <PackageTags>mongodb;dotnet10;options;configuration;csharp14;blazor</PackageTags>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <PackageOutputPath>I:\LocalNuget\</PackageOutputPath>
+		<PackageId>Tenowg.MongoOptions.Blazor</PackageId>
+		<Authors>Craig Russell</Authors>
+		<PackageProjectUrl>https://github.com/tenowg/MongoOptions.Blazor</PackageProjectUrl>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<RepositoryUrl>https://github.com/tenowg/MongoOptions.Blazor</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>A Blazor library to use with MongoOptions.</Description>
+		<PackageTags>mongodb;dotnet10;options;configuration;csharp14;blazor</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageOutputPath>I:\LocalNuget\</PackageOutputPath>
 
-	  <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
-	  <GeneratePackageOnBuild Condition="'$(Configuration)'=='LocalRelease'">true</GeneratePackageOnBuild>
-	  <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Debug'">false</GeneratePackageOnBuild>
+		<GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+		<GeneratePackageOnBuild Condition="'$(Configuration)' == 'Debug'">false</GeneratePackageOnBuild>
 
-	  <MinVerDefaultPreReleaseIdentifiers  Condition="'$(Configuration)' == 'LocalRelease'">local</MinVerDefaultPreReleaseIdentifiers>
-	  <Configurations>Debug;Release;LocalRelease</Configurations>
-  </PropertyGroup>
+		<PublishAot>false</PublishAot>
+		<IsAotCompatible>true</IsAotCompatible>
+		<Configurations>Debug;Release</Configurations>
+	</PropertyGroup>
 
 	<PropertyGroup>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -32,34 +32,25 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Include="MongoOptions.Blazor.csproj.user" />
 		<None Include="README.md" Pack="true" PackagePath="\" />
 		<None Include="LICENSE.txt" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
-    <PackageReference Include="MinVer" Version="7.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-	<ProjectReference Include="..\MongoOptions\MongoOptions.csproj" Condition="'$(Configuration)' == 'Debug'" />
-	<PackageReference Include="Tenowg.MongoOptions" Version="*" Condition="'$(Configuration)' == 'Release'"/>
-	<PackageReference Include="Tenowg.MongoOptions" Condition="'$(Configuration)'=='LocalRelease'">
-	  <Version>*-local*</Version>
-	</PackageReference>
-  </ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="I:\Mongo\MongoOptions.Generator\MongoOptions.Generator.csproj"
-						  OutputItemType="Analyzer"
-						  ReferenceOutputAssembly="false"
-						  Condition="'$(Configuration)' == 'Debug'"/>
+		<SupportedPlatform Include="browser" />
 	</ItemGroup>
-	<PropertyGroup>
-		<PublishAot>false</PublishAot>
-		<IsAotCompatible>false</IsAotCompatible>
-	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
+		<PackageReference Include="MinVer" Version="7.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<ProjectReference Include="..\MongoOptions\MongoOptions.csproj" Condition="'$(Configuration)' == 'Debug'" />
+		<PackageReference Include="Tenowg.MongoOptions" Version="*" Condition="'$(Configuration)' == 'Release'" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\MongoOptions.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Condition="'$(Configuration)' == 'Debug'" />
+	</ItemGroup>
 </Project>
