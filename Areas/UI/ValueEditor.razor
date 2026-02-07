@@ -10,6 +10,8 @@
 @using MongoOptions.Blazor.Fragments
 @using MongoOptions.Extensions
 @using MongoOptions.Types
+@using MongoOptions.Services
+@inject MongoConfigRegistry registry
 
 @if(SettingsObject != null) {
     @foreach (var prop in SettingsObject.GetProperties())
@@ -19,82 +21,80 @@
         <label class="form-label mb-display-name">@prop.Name</label><span class="mb-ui-name">@propType.GetUITypeName()</span>
         <div>@prop.Description</div>
 
-        @if (propType.GetUnderlyingType() == typeof(string))
-        {
-            var expression = (Expression<Func<string>>)prop.ExpressionFactory(SettingsObject);
-
-            <InputText Value="@(prop.Getter(SettingsObject)?.ToString() ?? "failed")"
-                       ValueChanged="@(val => prop.Setter(SettingsObject, val))"
-                       ValueExpression="@expression"
-                       class="form-control" />
-        }
-        
-        else if (propType.GetUnderlyingType() == typeof(Guid))
-        {
-            <input type="text"
-                   class="form-control"
-                   value="@prop.Getter(SettingsObject)"
-                   @onchange="@(async e => { await UpdateGuid(e.Value?.ToString() ?? "", prop); })"
-                   />
-            
-        }
-        else if (propType.IsSupportedNumber())
-        {
-            @((RenderFragment)prop.Dispatcher(SettingsObject, new NumberFragmentDispatcher(), prop))
-        }
-        else if (propType.GetUnderlyingType() == typeof(bool))
-        {
-            var expression = (Expression<Func<bool>>)prop.ExpressionFactory(SettingsObject);
-            <div class="form-check form-switch">
-                <InputCheckbox Value="@((bool)prop.Getter(SettingsObject)!)"
-                               ValueChanged="@(val => prop.Setter(SettingsObject, val))"
-                               ValueExpression="@expression"
-                               class="form-check-input" />
-            </div>
-        }
-        else if (propType.IsEnum)
-        {
-            @((RenderFragment)prop.Dispatcher(SettingsObject, new EnumFragmentDispatcher(), prop));
-        }
-        else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IList<>)))
-        {
-            var itemType = propType.GetGenericArguments()[0];
-            var listInstance = prop.Getter(SettingsObject);
-            var instance = typeof(ListComponent<>).MakeGenericType(itemType);
-            <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
-                          ["Items"] = listInstance!, 
-                          ["Label"] = prop.Name 
-                      })" />
-        }
-         else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IDictionary<,>)))
-        {
-            //var expression = prop.CreateLambda(SettingsObject, propType);
-            //var expression = (Expression<Func<Dictionary<object,object>>>)prop.ExpressionFactory(SettingsObject);
-            var itemType = propType.GetGenericArguments()[1];
-            var keyType = propType.GetGenericArguments()[0];
-            var listInstance = prop.Getter(SettingsObject);
-            var instance = typeof(DictionaryEditor<,,>).MakeGenericType(keyType, itemType, typeof(T));
-            <CascadingValue Value="@SettingsObject">
-            <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
-                          ["Items"] = listInstance!, 
-                          ["Label"] = prop.Name,
-                          ["propertyInfo"] = prop
-                      })" />
-            </CascadingValue>
-            //<ValidationMessage For="@expression" />
-        } 
-        else if (propType.IsClass && !IsAssignableToGenericType(propType, propType))
-        {
-            dynamic nestedValue = prop.Getter(SettingsObject!)!;
-            if (nestedValue == null)
+            @if (propType.GetUnderlyingType() == typeof(string))
             {
-                nestedValue = Activator.CreateInstance(propType)!;
-                prop.Setter(SettingsObject, nestedValue);
+                var expression = (Expression<Func<string>>)prop.ExpressionFactory(SettingsObject);
+
+                <InputText Value="@(prop.Getter(SettingsObject)?.ToString() ?? "failed")"
+                    ValueChanged="@(val => prop.Setter(SettingsObject, val))"
+                    ValueExpression="@expression"
+                    class="form-control" />
             }
 
-            @* <ValueEditor SettingsObject="nestedValue"/> *@
-        }
-    </div>
+            else if (propType.GetUnderlyingType() == typeof(Guid))
+            {
+                <input type="text"
+                    class="form-control"
+                    value="@prop.Getter(SettingsObject)"
+                    @onchange="@(async e => { await UpdateGuid(e.Value?.ToString() ?? "", prop); })"
+                />
+
+            }
+            else if (propType.IsSupportedNumber())
+            {
+                @((RenderFragment)prop.Dispatcher(SettingsObject, new NumberFragmentDispatcher(), prop))
+            }
+            else if (propType.GetUnderlyingType() == typeof(bool))
+            {
+                var expression = (Expression<Func<bool>>)prop.ExpressionFactory(SettingsObject);
+                <div class="form-check form-switch">
+                    <InputCheckbox Value="@((bool)prop.Getter(SettingsObject)!)"
+                        ValueChanged="@(val => prop.Setter(SettingsObject, val))"
+                        ValueExpression="@expression"
+                        class="form-check-input" />
+                </div>
+            }
+            else if (propType.IsEnum)
+            {
+                @((RenderFragment)prop.Dispatcher(SettingsObject, new EnumFragmentDispatcher(), prop));
+            }
+            else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IList<>)))
+            {
+                @((RenderFragment)prop.DispatchGenericOne(SettingsObject, new ListFragmentDispatcher(), prop));
+            }
+            else if (IsAssignableToGenericType(propType.GetUnderlyingType(), typeof(IDictionary<,>)))
+            {
+                @* var itemType = propType.GetGenericArguments()[1];
+                var keyType = propType.GetGenericArguments()[0];
+                var listInstance = prop.Getter(SettingsObject);
+                var instance = typeof(DictionaryEditor<,,>).MakeGenericType(keyType, itemType, typeof(T));
+                <CascadingValue Value="@SettingsObject">
+                    <DynamicComponent Type="@instance" Parameters="@(new Dictionary<string, object> { 
+                          ["Items"] = listInstance!, 
+                          ["prop"] = prop,
+                          ["propertyInfo"] = prop
+                      })" />
+                </CascadingValue> *@
+
+                @((RenderFragment)prop.DispatchGenericTwo(SettingsObject, new DictionaryEditorFragmentDispatcher(), prop))
+            }
+            else if (propType.IsClass && !IsAssignableToGenericType(propType, propType))
+            {
+                var nestedValue = prop.Getter(SettingsObject!)!;
+                if (nestedValue == null)
+                {
+                    //nestedValue = Activator.CreateInstance(propType)!;
+                    nestedValue = prop.New();
+                    prop.Setter(SettingsObject, nestedValue);
+                }
+                @* <ValueEditor SettingsObject="nestedValue"/> *@
+                var nested = prop.Getter(SettingsObject);
+                if (nested is IConfigFile value)
+                {
+                    @((RenderFragment)value.Dispatcher(value, new ValueEditorFragmentDispatcher()))
+                }
+            }
+        </div>
     }
 }
 @code {

@@ -6,6 +6,7 @@
 @inject IOptionsMonitor<T> OptionsAccessor
 @inject IConfigManager ConfigManager
 @inject MongoConfigRegistry registry
+@implements IDisposable
 
 <div class="mb-select-config">
     <div class="">
@@ -60,9 +61,15 @@
     private bool Disabled { get => !Enabled; }
 
     private T? _editingModel = default;
+    private IDisposable? _onChangeToken;
 
     protected override async Task OnInitializedAsync()
     {
+        _onChangeToken = OptionsAccessor.OnChange((e) => {
+            LoadSelectedConfig();
+            InvokeAsync(StateHasChanged);
+       });
+
         await LoadKeys();
     }
 
@@ -110,4 +117,6 @@
         }
         await LoadKeys();
     }
+
+    public void Dispose() => _onChangeToken?.Dispose();
 }

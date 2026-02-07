@@ -32,7 +32,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="MongoOptions.Blazor.csproj.user" />
 		<None Include="README.md" Pack="true" PackagePath="\" />
 		<None Include="LICENSE.txt" Pack="true" PackagePath="\" />
 	</ItemGroup>
@@ -51,6 +50,6 @@
 		<PackageReference Include="Tenowg.MongoOptions" Version="*" Condition="'$(Configuration)' == 'Release'" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\MongoOptions.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Condition="'$(Configuration)' == 'Debug'" />
+		<ProjectReference Include="..\MongoOptions.Generator\MongoOptions.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Condition="'$(Configuration)' == 'Debug'" />
 	</ItemGroup>
 </Project>

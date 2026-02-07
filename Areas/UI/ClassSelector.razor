@@ -19,11 +19,7 @@
     </div>
     @if (config != null)
     {
-    @* <DynamicComponent Type="typeof(ConfigSelector<>).MakeGenericType(useType ?? typeof(object))" Parameters="@( new Dictionary<string, object> {
-                ["Enabled"] = useType != null,
-                ["Instance"] = Registry.GetInstance(useType)
-                })"/> *@
-    @((RenderFragment)config.Dispatcher(null, new ConfigSelectorFragmentDispatcher()));
+        @((RenderFragment)config.Dispatcher(null, new ConfigSelectorFragmentDispatcher()));
     }
 </div>
 

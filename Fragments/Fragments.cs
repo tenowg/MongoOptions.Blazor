@@ -60,5 +60,31 @@ namespace MongoOptions.Blazor.Fragments
             __builder.OpenComponent<ConfigSelector<NType>>(0);
             __builder.CloseComponent();
         };
+
+        public static RenderFragment ListFragment<NType>(object Model, PropertyMetadata prop) => __builder =>
+        {
+            var test = prop.Getter(Model);
+
+            __builder.OpenComponent<ListComponent<NType>>(0);
+            __builder.AddAttribute(1, "Items", test);
+            __builder.AddAttribute(2, "prop", prop);
+            __builder.CloseComponent();
+        };
+
+        public static RenderFragment ValueEditorFragment<NType>(object model) where NType : class, IConfigFile => __builder =>
+        {
+            __builder.OpenComponent<ValueEditor<NType>>(0);
+            __builder.AddAttribute(1, "SettingsObject", model);
+            __builder.CloseComponent();
+        };
+
+        public static RenderFragment DictionaryEditorFragment<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull => __builder =>
+        {
+            __builder.OpenComponent<DictionaryEditor<TKey, TValue>>(0);
+            __builder.AddAttribute(1, "SettingsObject", model);
+            __builder.AddAttribute(2, "Items", prop.Getter(model));
+            __builder.AddAttribute(3, "propertyInfo", prop);
+            __builder.CloseComponent();
+        };
     }
 }

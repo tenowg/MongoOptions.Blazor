@@ -1,9 +1,11 @@
 ﻿@typeparam TItem
 @using System.Reflection
 @using Microsoft.AspNetCore.Components.Forms
+@using MongoOptions.Blazor.Fragments
+@using MongoOptions.Interfaces
+@using MongoOptions.Types
 
 <div class="mb-list-editor p-3 mb-3">
-    @* <h6>@Label</h6> *@
     @foreach (var (item, index) in Items.Select((value, i) => (value, i)))
     {   
         <div class="mb-list-item">
@@ -16,8 +18,11 @@
                        @onchange="@(e => UpdateItem(index, e.Value))" />
                 } else
                 {
-                    dynamic nested = item;
-                    <ValueEditor SettingsObject="nested"/>
+                    var nested = Items[index];
+                    if (nested is IConfigFile value)
+                    {
+                        @((RenderFragment)value.Dispatcher(value, new ValueEditorFragmentDispatcher()))
+                    }
                 }
             </div>
             <button type="button" class="btn btn-danger btn-sm ms-2 mb-item-button"
@@ -54,8 +59,8 @@
 </style>
 
 @code {
-    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
-    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public List<TItem> Items { get; set; }
+    [Parameter] public PropertyMetadata prop { get; set; }
     [CascadingParameter] public EditContext CurrentContext { get; set; } = default!;
 
     private void UpdateItem(int index, object? value)
@@ -66,21 +71,12 @@
 
     private void AddItem()
     {
-        if (!typeof(TItem).IsPrimitive && typeof(TItem) != typeof(string))
-        {
-            var test = Activator.CreateInstance<TItem>();
-            Items.Add(test);
-        }
-        else
-        {
-            Items.Add(default!); // Or handle constructor for complex types
-            CurrentContext.NotifyValidationStateChanged();
-        }
+        Items.Add((TItem)prop.NewTypePropertyOne());
     }
 
     private void RemoveItem(int index)
     {
-        
+
         Items.RemoveAt(index);
         CurrentContext.NotifyValidationStateChanged();
     }
@@ -95,15 +91,11 @@
     {
         if (value == null || value.ToString() == "") return null;
 
-        // 1. Handle Guids
         if (targetType == typeof(Guid))
             return Guid.Parse(value.ToString()!);
-
-        // 2. Handle Enums
         if (targetType.IsEnum)
             return Enum.Parse(targetType, value.ToString()!);
 
-        // 3. Fallback to standard conversion
-        return Convert.ChangeType(value, targetType);
+        return value;
     }
 }

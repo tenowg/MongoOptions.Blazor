@@ -1,10 +1,11 @@
 ﻿@using System.Reflection
 @using Microsoft.AspNetCore.Components.Forms
+@using MongoOptions.Blazor.Fragments
 @using MongoOptions.Extensions
+@using MongoOptions.Interfaces
 @using MongoOptions.Types
 @typeparam TKey where TKey : notnull
 @typeparam TValue
-@typeparam TSettingConfig
 
 <div class="mb-dictionary-editor">
     @foreach (var key in Items.Keys.ToList())
@@ -22,8 +23,11 @@
                 }
                 else
                 {
-                dynamic nested = Items[key]!;
-                <ValueEditor SettingsObject="nested" />
+                    var nested = Items[key];
+                    if (nested is IConfigFile value)
+                    {
+                        @((RenderFragment)value.Dispatcher(value, new ValueEditorFragmentDispatcher()))
+                    }
                 }
             </div>
             <div class="col-auto">
@@ -62,11 +66,10 @@
 
 @code {
     [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
-    [Parameter] public string Label { get; set; } = "";
     [Parameter] public PropertyMetadata propertyInfo { get; set; } = default!;
+    [Parameter] public IConfigFile? SettingsObject { get; set; }
     [CascadingParameter] public EditContext? CurrentContext { get; set; } = default!;
     [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
-    [CascadingParameter] public required TSettingConfig SettingsObject { get; set; }
 
     private void UpdateValue(TKey key, object? val)
     {

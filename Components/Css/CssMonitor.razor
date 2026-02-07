@@ -1,29 +1,35 @@
 ﻿@using Microsoft.Extensions.Options
 @using MongoOptions.Blazor.Configs
 @inject IOptionsMonitor<MongoThemeOptions> ThemeMonitor
-@* @inject IOptionsMonitorCache<MongoThemeOptions> cache *@
+@inject IOptionsMonitorCache<MongoThemeOptions> cache
 @implements IDisposable
 
-<style>
-    :root {
-        --theme-primary: @CurrentTheme.PrimaryColor;
-        --theme-displayname-color: @CurrentTheme.DisplayNameColor;
-        --theme-displayname-size: @CurrentTheme.DisplayNameSize;
-        --theme-typename-color: @CurrentTheme.TypeNameColor;
-        --theme-typename-size: @CurrentTheme.TypeNameSize;
-        --theme-bordercolor-primary: @CurrentTheme.BorderColorPrimary;
-        --theme-bordercolor-secondary: @CurrentTheme.BorderColorSecondary;
-    }
-</style>
+<div @key = "_version">
+    <style @key = "_version">
+        :root {
+            --theme-primary: @CurrentTheme.PrimaryColor;
+            --theme-displayname-color: @CurrentTheme.DisplayNameColor;
+            --theme-displayname-size: @CurrentTheme.DisplayNameSize;
+            --theme-typename-color: @CurrentTheme.TypeNameColor;
+            --theme-typename-size: @CurrentTheme.TypeNameSize;
+            --theme-bordercolor-primary: @CurrentTheme.BorderColorPrimary;
+            --theme-bordercolor-secondary: @CurrentTheme.BorderColorSecondary;
+        }
+    </style>
+</div>
 
 @code {
-    private MongoThemeOptions CurrentTheme => ThemeMonitor.CurrentValue;
+    private int _version = 0;
+    private MongoThemeOptions CurrentTheme => ThemeMonitor.Get("test");
+
     private IDisposable? _onChangeToken;
 
     protected override void OnInitialized()
     {
-        //cache.TryRemove(Options.DefaultName);
-       _onChangeToken = ThemeMonitor.OnChange(_ => InvokeAsync(StateHasChanged));
+        _onChangeToken = ThemeMonitor.OnChange((e, f) => {
+            _version++;
+            InvokeAsync(StateHasChanged);
+       });
     }
 
     public void Dispose() => _onChangeToken?.Dispose();
