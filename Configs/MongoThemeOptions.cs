@@ -22,6 +22,7 @@ namespace MongoOptions.Blazor.Configs
         public string BorderColorPrimary { get; set; } = "#333333";
         [Display(Name = "Border Color Secondary")]
         public string BorderColorSecondary { get; set; } = "#8c8c8c";
+        public int BorderWidth { get; set; } = 98;
     }
 
     [OptionsValidator]

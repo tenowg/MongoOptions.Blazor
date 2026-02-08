@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Linq.Expressions
+@using MongoOptions.Blazor.Fragments
 @using MongoOptions.Interfaces
 
 <EditForm FormName="ConfigEditor" EditContext="editContext" OnValidSubmit="HandleValidSubmit">
@@ -15,6 +16,7 @@
             <InputText @bind-Value="ConfigName" class="form-control" placeholder="e.g. Default or Tenant_A" />
         </div>
         <CascadingValue Value="messageStore">
+            @SettingsObject.Dispatcher(SettingsObject, new ValueEditorFragmentDispatcher());
             <ValueEditor T="T" SettingsObject="SettingsObject" />
         </CascadingValue>
         

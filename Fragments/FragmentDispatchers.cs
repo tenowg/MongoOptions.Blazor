@@ -1,53 +1,104 @@
-﻿using MongoOptions.Interfaces;
+﻿using Microsoft.AspNetCore.Components;
+using MongoOptions.Attributes;
+using MongoOptions.Interfaces;
 using MongoOptions.Types;
 
 namespace MongoOptions.Blazor.Fragments
 {
-    public class EnumFragmentDispatcher : IDispatcher
+    public class EnumFragmentDispatcher : EnumDisplatcher
     {
-        public object Execute<TProperty>(object model, PropertyMetadata prop)
+        public RenderFragment Execute<TProperty>(object model, PropertyMetadata prop) where TProperty : struct, Enum
         {
             return Fragments.EnumFragment<TProperty, object>(model, prop);
         }
-    }
 
-    public class NumberFragmentDispatcher : IDispatcher
-    {
-        public object Execute<TProperty>(object model, PropertyMetadata prop)
+        public RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull
         {
-            return Fragments.NumberFragment<TProperty, object>(model, prop);
+            throw new NotImplementedException();
         }
     }
 
-    public class ConfigSelectorFragmentDispatcher : IClassDispatcher
+    public class ConfigSelectorFragmentDispatcher : IConfigDispatcherGateway<RenderFragment>
     {
-        public object Execute<TProperty>(object model) where TProperty : class, IConfigFile, new()
+        public RenderFragment Execute<TProperty>(object model) where TProperty : class, IConfigFile, new()
         {
             return Fragments.ConfigSelectorFragment<TProperty>();
         }
     }
 
-    public class ListFragmentDispatcher : IDispatcher
+    public class ListFragmentDispatcher : TestDisplatcher
     {
-        public object Execute<TProperty>(object model, PropertyMetadata prop)
+        public RenderFragment Execute<T>(object model, PropertyMetadata prop)
         {
-            return Fragments.ListFragment<TProperty>(model, prop);
+            return Fragments.ListFragment<T>(model, prop);
+        }
+
+        public RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull
+        {
+            throw new NotImplementedException();
         }
     }
 
-    public class ValueEditorFragmentDispatcher : IClassDispatcher
+    public class ValueEditorFragmentDispatcher : IConfigDispatcherGateway<RenderFragment>
     {
-        public object Execute<TProperty>(object model) where TProperty : class, IConfigFile, new()
+        public RenderFragment Execute<TProperty>(object model) where TProperty : class, IConfigFile, new()
         {
             return Fragments.ValueEditorFragment<TProperty>(model);
         }
     }
 
-    public class DictionaryEditorFragmentDispatcher : IDispatcherTwo
+    public class DictionaryEditorFragmentDispatcher : TestDisplatcher
     {
-        public object Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull
+        public RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull
         {
             return Fragments.DictionaryEditorFragment<TKey, TValue>(model, prop);
-        } 
+        }
+
+        public RenderFragment Execute<T>(object model, PropertyMetadata prop)
+        {
+            throw new NotImplementedException();
+        }
     }
+
+    public class NumberFragmentDispatcher : IDispatcherGateway<RenderFragment>
+    {
+        public RenderFragment Execute<T>(object model, PropertyMetadata prop)
+        {
+            return Fragments.NumberFragment<T, object>(model, prop);
+        }
+
+        public RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [CustomDispatcher]
+    public interface TestDisplatcher
+    {
+        RenderFragment Execute<T>(object model, PropertyMetadata prop);
+
+        RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull;
+    }
+
+    [CustomDispatcher(WhiteList = nameof(Enum))]
+    public interface EnumDisplatcher
+    {
+        RenderFragment Execute<T>(object model, PropertyMetadata prop) where T : struct, Enum;
+
+        RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey : notnull;
+    }
+
+    //public class AotEnumDispatcher : TestDisplatcher
+    //{
+    //    public RenderFragment Execute<T>(object model, PropertyMetadata prop)
+    //    {
+    //        return Fragments.NumberFragment<T, object>(model, prop);
+    //    }
+
+    //    public RenderFragment Execute<TKey, TValue>(object model, PropertyMetadata prop) where TKey: notnull
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 }
