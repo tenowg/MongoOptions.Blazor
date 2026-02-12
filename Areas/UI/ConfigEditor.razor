@@ -16,8 +16,7 @@
             <InputText @bind-Value="ConfigName" class="form-control" placeholder="e.g. Default or Tenant_A" />
         </div>
         <CascadingValue Value="messageStore">
-            @SettingsObject.Dispatcher(SettingsObject, new ValueEditorFragmentDispatcher());
-            <ValueEditor T="T" SettingsObject="SettingsObject" />
+            @((RenderFragment)SettingsObject.Dispatcher(SettingsObject, new ValueEditorFragmentDispatcher()))
         </CascadingValue>
         
         <button type="submit" class="btn btn-primary">Save Configuration</button>
