@@ -65,11 +65,11 @@
 </style>
 
 @code {
-    [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
-    [Parameter] public PropertyMetadata propertyInfo { get; set; } = default!;
-    [Parameter] public IConfigFile? SettingsObject { get; set; }
-    [CascadingParameter] public EditContext? CurrentContext { get; set; } = default!;
-    [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
+        [Parameter] public IDictionary<TKey, TValue> Items { get; set; } = new Dictionary<TKey, TValue>();
+        [Parameter] public PropertyMetadata propertyInfo { get; set; } = default!;
+        [Parameter] public IConfigFile? SettingsObject { get; set; }
+        [CascadingParameter] public EditContext? CurrentContext { get; set; } = default!;
+        [CascadingParameter] public ValidationMessageStore? MessageStore { get; set; } = default!;
 
     private void UpdateValue(TKey key, object? val)
     {
@@ -78,16 +78,16 @@
 
     private void UpdateKey(TKey key, object value)
     {
-        dynamic newValue = value;
+        TKey newKeyValue = (TKey)value;
         var dictValue = Items[key];
         Items.Remove(key);
-        Items.Add(newValue, dictValue);
+        Items.Add(newKeyValue, dictValue);
     }
 
     private void AddItem()
     {
         MessageStore?.Clear(new FieldIdentifier(SettingsObject!, propertyInfo.Name));
-        var keyValue = default(TKey); // typeof(TKey).GetDefaultValue();
+        var keyValue = (TKey)propertyInfo.NewTypePropertyOne();
         if (!typeof(TKey).IsPrimitive && typeof(TKey) != typeof(string) || keyValue == null)
         {
             // we can't handle this, it will in the future throw an error in the Core package
@@ -95,16 +95,15 @@
         }
         if (!typeof(TValue).IsPrimitive && typeof(TValue) != typeof(string))
         {
-            var value = Activator.CreateInstance<TValue>();
-            dynamic key = keyValue;
-            var test = new KeyValuePair<TKey, TValue>(key, value);
-            if (!Items.ContainsKey(key))
+            var value = (TValue)propertyInfo.NewTypePropertyTwo();
+            var test = new KeyValuePair<TKey, TValue>(keyValue, value);
+            if (!Items.ContainsKey(keyValue))
             {
                 Items.Add(test);
             }
             else
             {
-                MessageStore?.Add(new FieldIdentifier(SettingsObject!, propertyInfo.Name), "sdfjsnifunsdfjsd");
+                MessageStore?.Add(new FieldIdentifier(SettingsObject!, propertyInfo.Name), "Attempting to add Key that aleady exists, Please edit other default key first.");
             }
         }
         
