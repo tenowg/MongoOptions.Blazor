@@ -1,5 +1,6 @@
 # MongoOptions.Blazor 🍃
 
+Due to Code Generation this library is only an example of use. You need to download the project code and add it to a project to use as is.
 A Blazor component library for managing MongoDB-based configurations using MongoOptions. Provides UI components for CRUD operations on configuration settings stored in MongoDB.
 
 ## 🚀 Features

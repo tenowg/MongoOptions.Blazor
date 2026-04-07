@@ -20,7 +20,7 @@
 
 @code {
     private int _version = 0;
-    private MongoThemeOptions CurrentTheme => ThemeMonitor.Get("test");
+    private MongoThemeOptions CurrentTheme => ThemeMonitor.CurrentValue;
 
     private IDisposable? _onChangeToken;
 
